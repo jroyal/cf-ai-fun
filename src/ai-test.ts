@@ -1,24 +1,28 @@
-import { Ai } from '@cloudflare/ai'
-import { Env } from '../worker-configuration'
+import { Ai } from '@cloudflare/ai';
+import { Env } from '../worker-configuration';
 
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    const data: any = await request.json()
-    console.log(data.question)
-    const ai = new Ai(env.AI)
+		const u = new URL(request.url);
+		const question = u.searchParams.get('question') || 'no question';
+		// const data: any = await request.json()
+		console.log(question);
+		const ai = new Ai(env.AI);
 
-    const answer = await ai.run(
-      // '@cf/meta/llama-2-7b-chat-int8',
-      '@hf/thebloke/neural-chat-7b-v3-1-awq',
-      {
-        messages: [
-          { role: 'user', content: data.question }
-        ]
-      }
-    )
+		const answer = await ai.run(
+			// '@cf/meta/llama-2-7b-chat-int8',
+			'@hf/thebloke/neural-chat-7b-v3-1-awq',
+			{
+				stream: true,
+				messages: [
+					// { role: 'system', content: 'Use 10 words or less to answer the prompt if possible. Do not add context or notes. ' },
+					{ role: 'user', content: question },
+				],
+			}
+		);
 
-    console.log(answer)
+		console.log(answer);
 
-    return new Response(JSON.stringify({answer: answer.response}))
-	}
-}
+		return new Response(answer, { headers: { 'content-type': 'text/event-stream' } });
+	},
+};

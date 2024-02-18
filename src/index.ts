@@ -104,6 +104,7 @@ export default {
 						top: 50%;
 						transform: translate(-50%, -50%);
 					}
+					
 					@keyframes spin {
 						0% { transform: translate(-50%, -50%) rotate(0deg); }
 						100% { transform: translate(-50%, -50%) rotate(360deg); }
@@ -116,6 +117,7 @@ export default {
 						<input type="text" id="questionInput" placeholder="Ask your question here" autofocus>
 						<button type="submit">Ask</button>
 					</form>
+					<div id="spinner" class="spinner" style="display: none;"></div>
 					<div id="answer"></div>
 				</div>
 			
@@ -126,19 +128,33 @@ export default {
 						// For now, just display the question in the answer div
 						document.getElementById('answer').innerText = 'Question asked: ' + question;
 						var answerDiv = document.getElementById('answer');
-						answerDiv.innerHTML = '<div class="spinner"></div>'; // Show spinner while processing
+						showSpinner(true)
+			
+						// answerDiv.innerHTML = '<div class="spinner"></div>'; // Show spinner while processing
 						
 						// Example: Fetch API call to Cloudflare Worker
-						fetch('/ai', {
-							method: 'POST',
-							headers: { 'Content-Type': 'application/json' },
-							body: JSON.stringify({ question: question })
-						})
-						.then(response => response.json())
-						.then(data => {
-							document.getElementById('answer').innerText = 'Answer: ' + data.answer;
-						})
-						.catch(error => console.error('Error:', error));
+						// fetch('/ai', {
+						//     method: 'POST',
+						//     headers: { 'Content-Type': 'application/json' },
+						//     body: JSON.stringify({ question: question })
+						// })
+						// .then(response => response.json())
+						// .then(data => {
+						//     document.getElementById('answer').innerText = 'Answer: ' + data.answer;
+						// })
+						// .catch(error => console.error('Error:', error));
+			
+						const source = new EventSource("/ai?question="+encodeURIComponent(question))
+						source.onmessage = (event) => {
+							if (event.data == "[DONE]") {
+								source.close()
+								showSpinner(false)
+								console.log('done')
+								return
+							}
+							const data = JSON.parse(event.data)
+							answerDiv.innerHTML += data.response
+						}
 					}
 			
 					document.getElementById('questionForm').addEventListener('submit', function(event) {
@@ -146,10 +162,14 @@ export default {
 						askQuestion()
 					})
 					
+					function showSpinner(show) {
+						const spinner = document.getElementById("spinner")
+						spinner.style.display = show ? 'block' : 'none'
+					}
 				</script>
 			</body>
 			</html>
-						`,
+												`,
 			{ headers: { 'Content-Type': 'text/html' } }
 		);
 	},
