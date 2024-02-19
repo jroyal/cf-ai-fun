@@ -1,149 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>AI Prompt Question</title>
-		<style>
-			/* General Reset and Base Styles */
-			* {
-				box-sizing: border-box;
-				margin: 0;
-				padding: 0;
-			}
 
-			body,
-			html {
-				height: 100%;
-				font-family: 'Arial', sans-serif;
-				background-color: #eceff1; /* Light grey background */
-				display: flex;
-				justify-content: center;
-				align-items: center;
-			}
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>CF AI Fun</title>
+	<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
 
-			/* Main Content Card */
-			.card {
-				background-color: #fff;
-				padding: 2rem;
-				border-radius: 8px;
-				box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-				width: 80%;
-				max-width: 600px;
-				margin: auto;
-			}
-
-			/* Input and Button Styles */
-			.input-question {
-				width: 100%;
-				padding: 10px;
-				border-radius: 4px;
-				border: 1px solid #ddd;
-				margin-bottom: 1rem; /* Space between input and button */
-			}
-
-			.compute-button {
-				width: 100%;
-				padding: 10px;
-				border: none;
-				border-radius: 4px;
-				background-color: #007bff; /* Bootstrap primary color */
-				color: white;
-				cursor: pointer;
-				font-size: 16px;
-			}
-
-			.compute-button:hover {
-				background-color: #0056b3; /* Darker shade for hover state */
-			}
-
-			/* Answer Display Styles */
-			.answer {
-				margin-top: 1rem;
-				padding: 10px;
-				background-color: #f1f1f1; /* Light grey background */
-				border-radius: 4px;
-				border: 1px solid #ddd;
-			}
-
-			/* Spinner styles */
-			.spinner {
-				border: 4px solid rgba(0, 0, 0, 0.1);
-				border-radius: 50%;
-				border-top: 4px solid #3498db;
-				width: 20px;
-				height: 20px;
-				animation: spin 1s linear infinite;
-				position: absolute;
-				left: 50%;
-				top: 50%;
-				transform: translate(-50%, -50%);
-			}
-			@keyframes spin {
-				0% {
-					transform: translate(-50%, -50%) rotate(0deg);
-				}
-				100% {
-					transform: translate(-50%, -50%) rotate(360deg);
-				}
-			}
-		</style>
-	</head>
-	<body>
-		<div class="container">
-			<form id="questionForm">
-				<input type="text" id="questionInput" placeholder="Ask your question here" autofocus />
-				<button type="submit">Ask</button>
-			</form>
-			<div id="spinner" class="spinner" style="display: none"></div>
-			<div id="answer"></div>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+	<div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 flex flex-col w-4/5 max-w-4xl">
+		<form id="questionForm">
+			<div class="flex mb-4">
+				<input name="question"
+					class="shadow appearance-none border rounded-l w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+					id="question" type="text" placeholder="Ask me anything..." autofocus>
+				<button
+					class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-r focus:outline-none focus:shadow-outline"
+					type="submit">
+					Ask
+				</button>
+			</div>
+		</form>
+		<div>
+			<label class="block text-gray-700 text-sm font-bold mb-2" for="response">
+				Response
+			</label>
+			<div id="response"
+				class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight whitespace-pre-wrap"
+				contenteditable="false">
+				<!-- Response will be shown here -->
+			</div>
 		</div>
+	</div>
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			const form = document.getElementById('questionForm');
 
-		<script>
-			function askQuestion() {
-				var question = document.getElementById('questionInput').value;
-				// Placeholder for making an API call to your Cloudflare Worker
-				// For now, just display the question in the answer div
-				document.getElementById('answer').innerText = 'Question asked: ' + question;
-				var answerDiv = document.getElementById('answer');
-				showSpinner(true);
+			form.addEventListener('submit', function (event) {
+				event.preventDefault(); // Prevent the default form submission
+				const question = document.getElementById('question').value;
 
-				// answerDiv.innerHTML = '<div class="spinner"></div>'; // Show spinner while processing
+				// Placeholder for where you would handle the question and generate a response
+				const response = `You asked: ${question}\n\n`;
+				const responseDiv = document.getElementById('response')
+				responseDiv.textContent = response;
 
 				// Example: Fetch API call to Cloudflare Worker
-				// fetch('/ai', {
-				//     method: 'POST',
-				//     headers: { 'Content-Type': 'application/json' },
-				//     body: JSON.stringify({ question: question })
-				// })
-				// .then(response => response.json())
-				// .then(data => {
-				//     document.getElementById('answer').innerText = 'Answer: ' + data.answer;
-				// })
-				// .catch(error => console.error('Error:', error));
-
-				const source = new EventSource('/ai?question=' + encodeURIComponent(question));
+				const source = new EventSource("/ai?question=" + encodeURIComponent(question))
 				source.onmessage = (event) => {
-					if (event.data == '[DONE]') {
-						source.close();
-						showSpinner(false);
-						console.log('done');
-						return;
+					if (event.data == "[DONE]") {
+						source.close()
+						console.log('done')
+						return
 					}
-					const data = JSON.parse(event.data);
-					answerDiv.innerHTML += data.response;
-				};
-			}
+					console.log(event.data)
+					const data = JSON.parse(event.data)
+					responseDiv.innerHTML += data.response
+				}
 
-			document.getElementById('questionForm').addEventListener('submit', function (event) {
-				event.preventDefault();
-				askQuestion();
+				// Optionally clear the question field or handle as needed
+				// document.getElementById('question').value = '';
 			});
+		});
+	</script>
+</body>
 
-			function showSpinner(show) {
-				const spinner = document.getElementById('spinner');
-				spinner.style.display = show ? 'block' : 'none';
-			}
-		</script>
-	</body>
 </html>
