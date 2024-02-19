@@ -11,7 +11,7 @@
 import { Env } from '../worker-configuration';
 import handleProxy from './proxy';
 import handleRedirect from './redirect';
-import handleAI from './ai-test'
+import handleAI from './ai-test';
 import apiRouter from './router';
 
 // Export a default object containing event handlers
@@ -21,7 +21,7 @@ export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
 		// You'll find it helpful to parse the request.url string into a URL object. Learn more at https://developer.mozilla.org/en-US/docs/Web/API/URL
 		const url = new URL(request.url);
-		console.log(url.pathname)
+		console.log(url.pathname);
 
 		// You can get pretty far with simple logic like if/switch-statements
 		switch (url.pathname) {
@@ -32,7 +32,7 @@ export default {
 				return handleProxy.fetch(request, env, ctx);
 
 			case '/ai':
-				return handleAI.fetch(request, env, ctx)
+				return handleAI.fetch(request, env, ctx);
 		}
 
 		if (url.pathname.startsWith('/api/')) {
@@ -83,6 +83,7 @@ export default {
 						background-color: #0056b3;
 					}
 					#answer {
+						white-space: pre-wrap;
 						margin-top: 20px;
 						text-align: left;
 						border: 1px solid #ddd;
@@ -123,10 +124,11 @@ export default {
 			
 				<script>
 					function askQuestion() {
+						document.getElementById('answer').innerText = '';
 						var question = document.getElementById('questionInput').value;
 						// Placeholder for making an API call to your Cloudflare Worker
 						// For now, just display the question in the answer div
-						document.getElementById('answer').innerText = 'Question asked: ' + question;
+						// document.getElementById('answer').innerText = 'Question asked: ' + question;
 						var answerDiv = document.getElementById('answer');
 						showSpinner(true)
 			
@@ -152,6 +154,7 @@ export default {
 								console.log('done')
 								return
 							}
+							console.log(event.data)
 							const data = JSON.parse(event.data)
 							answerDiv.innerHTML += data.response
 						}
