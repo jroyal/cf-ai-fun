@@ -20,7 +20,7 @@ function generateRequestBody(question: string) {
 
 async function makeAIReq(context: EventContext<Env, any, any>, question: string) {}
 
-export const onRequestPost: PagesFunction<Env> = async (context) => {
+export const onRequest: PagesFunction<Env> = async (context) => {
 	const request = context.request;
 	const u = new URL(request.url);
 	const question = u.searchParams.get('question') || 'no question';
