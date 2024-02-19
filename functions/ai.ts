@@ -18,30 +18,28 @@ function generateRequestBody(question: string) {
 	};
 }
 
-async function makeAIReq(context: EventContext<Env, any, any>, question: string) {}
+async function makeAIReq(context: EventContext<Env, any, any>, question: string) {
+	const model = '@cf/mistral/mistral-7b-instruct-v0.1';
+	const body = generateRequestBody(question);
+	let answer;
+	try {
+		const ai = new Ai(context.env.AI);
+		answer = await ai.run(model, body);
+	} catch (e) {
+		console.log('AI binding failed. Trying to use rest api');
+		answer = fetch(`https://api.cloudflare.com/client/v4/accounts/${context.env.ACCOUNT_ID}/ai/run/${model}`, {
+			method: 'POST',
+			headers: { Authorization: `Bearer ${context.env.CF_AI_API_TOKEN}` },
+			body: JSON.stringify(body),
+		});
+		return answer;
+	}
+	return new Response(answer, { headers: { 'content-type': 'text/event-stream' } });
+}
 
 export const onRequest: PagesFunction<Env> = async (context) => {
-	console.log(context.env.CF_AI_API_TOKEN);
 	const request = context.request;
 	const u = new URL(request.url);
 	const question = u.searchParams.get('question') || 'no question';
-	// const data: any = await request.json()
-	console.log(question);
-	const ai = new Ai(context.env.AI);
-
-	try {
-		const answer = await ai.run(
-			// '@cf/meta/llama-2-7b-chat-int8',
-			// '@hf/thebloke/neural-chat-7b-v3-1-awq',
-			// '@hf/thebloke/codellama-7b-instruct-awq',
-			'@cf/mistral/mistral-7b-instruct-v0.1',
-			generateRequestBody(question)
-		);
-
-		console.log(answer);
-		return new Response(answer, { headers: { 'content-type': 'text/event-stream' } });
-	} catch (e) {
-		console.log(e);
-		return new Response('something went wrong my dude');
-	}
+	return await makeAIReq(context, question);
 };

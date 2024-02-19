@@ -27,7 +27,7 @@
 				Response
 			</label>
 			<div id="response"
-				class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight"
+				class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight whitespace-pre-wrap"
 				contenteditable="false">
 				<!-- Response will be shown here -->
 			</div>
@@ -42,7 +42,7 @@
 				const question = document.getElementById('question').value;
 
 				// Placeholder for where you would handle the question and generate a response
-				const response = `You asked: ${question}`;
+				const response = `You asked: ${question}\n\n`;
 				const responseDiv = document.getElementById('response')
 				responseDiv.textContent = response;
 

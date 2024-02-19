@@ -18,4 +18,5 @@ interface Env {
 	AI: Ai;
 
 	CF_AI_API_TOKEN: string;
+	ACCOUNT_ID: string;
 }
