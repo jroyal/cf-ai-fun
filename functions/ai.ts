@@ -21,6 +21,7 @@ function generateRequestBody(question: string) {
 async function makeAIReq(context: EventContext<Env, any, any>, question: string) {}
 
 export const onRequest: PagesFunction<Env> = async (context) => {
+	console.log(context.env.CF_AI_API_TOKEN);
 	const request = context.request;
 	const u = new URL(request.url);
 	const question = u.searchParams.get('question') || 'no question';
